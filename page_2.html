@@ -334,7 +334,10 @@
         yesButton.addEventListener('click', function () {
             noButton.style.display = 'none';
             yesButton.style.display = 'none';
-            questionText.textContent = "Cảm ơn em! Đây là khởi đầu đẹp nhất của chúng ta 💞"; // Thay đổi nội dung
+            newtext = "Cảm ơn em! Đây là khởi đầu đẹp nhất của chúng ta 💞"; // Thay đổi nội dung
+
+            // Bắt đầu hiệu ứng gõ chữ cho đoạn văn mới
+            requestAnimationFrame((timestamp) => typeWriter(newtext));
             hearts.forEach(heart => {
                 heart.isGoingUp = true; // Đánh dấu trái tim để bay lên
             });
