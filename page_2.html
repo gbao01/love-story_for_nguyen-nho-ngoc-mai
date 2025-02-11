@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiệu ứng Trái Tim Rơi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tourney:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(#4c0c0c, #000);
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* Container chứa câu hỏi và các nút */
+        #questionContainer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 20px;
+            color: white;
+            border-radius: 10px;
+            width: 700px;
+            height: auto;
+            font-family: "Tourney", serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+            font-size: 40px;
+            z-index: 2;
+        }
+
+        #questionText {
+            margin-bottom: 20px;
+            color: red;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .btn {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-family: "Tourney", serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .no-btn {
+            background-color: red;
+            color: white;
+            margin: 90px;
+            cursor: none;
+            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+            white-space: nowrap;
+            display: none;
+        }
+
+        .yes-btn {
+            white-space: nowrap;
+            background-color: green;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+            display: none;
+        }
+
+        .yes-btn:hover {
+            background: green;
+        }
+
+        .next-btn {
+            background-color: transparent;
+            color: white;
+            margin-top: 30px;
+            padding: 12px 30px;
+            font-size: 20px;
+            display: none; /* Ẩn nút Next ban đầu */
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas"></canvas>
+    <audio autoplay loop>
+        <source src="./rain-heart-so/love.mp3" type="audio/mpeg">
+    </audio>
+    <div id="questionContainer">
+        <div id="questionText"></div>
+        <button class="btn next-btn" id="nextButton">Tiếp tục >>></button>
+        <button class="btn yes-btn" id="yesButton">Đồng Ý 💖</button>
+        <button class="btn no-btn" id="noButton" tabindex="-1">Từ Chối 💔</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const questionText = document.getElementById('questionText');
+        const nextButton = document.getElementById('nextButton');
+        const yesButton = document.getElementById('yesButton');
+        const noButton = document.getElementById('noButton');
+
+        const story = [
+            "Chào em,... ",
+            "Có vài lời anh muốn gửi tới em...",
+            "Đó là ...",
+            "Sau những lần trò chuyện, anh đã thấy mình hợp nhau lạ kỳ... 💬",
+            "Những đêm thức khuya tâm sự, cùng những câu chuyện không điểm dừng... 🌙",
+            "Nụ cười em là thứ khiến anh hạnh phúc nhất mỗi ngày 😊",
+            "Em có muốn cùng anh viết tiếp câu chuyện này không? 💌"
+        ];
+
+        let currentStoryIndex = 0;
+
+        // Đặt kích thước canvas
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Hàm vẽ hình trái tim
+        function drawHeart(x, y, size, rotation) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.beginPath();
+            ctx.moveTo(0, size / 10);
+
+            // Vẽ đường cong bên trái
+            ctx.bezierCurveTo(-size / 2, -size / 2, -size, size / 2, 0, size);
+
+            // Vẽ đường cong bên phải
+            ctx.bezierCurveTo(size, size / 2, size / 2, -size / 2, 0, size / 10);
+
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath();
+            ctx.restore();
+        }
+
+        // Mảng để lưu trữ các trái tim
+        const hearts = [];
+
+        // Hàm tạo trái tim mới
+        function createHeart() {
+            const x = Math.random() * canvas.width;
+            const y = -20; // Bắt đầu từ trên cùng
+            const size = 5 + Math.random() * 10; // Kích thước ngẫu nhiên
+            const speed = 2 + Math.random() * 3; // Tốc độ rơi ngẫu nhiên
+            const pathX = (Math.random() - 0.5) * 100; // Quỹ đạo ngang
+            const swingSpeed = (Math.random() - 0.5) * 0.05; // Tốc độ đung đưa
+
+            hearts.push({ x, y, size, speed, pathX, isAtBottom: false, stayTime: 0, rotation: 0, swingSpeed, isGoingUp: false });
+        }
+
+        // Hàm cập nhật vị trí và vẽ trái tim
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Xóa canvas
+
+            hearts.forEach((heart, index) => {
+                if (!heart.isAtBottom) {
+                    heart.y += heart.speed; // Rơi xuống
+                    heart.x += heart.pathX / 100; // Di chuyển ngang
+                    heart.rotation += heart.swingSpeed; // Cập nhật góc đung đưa
+
+                    // Kiểm tra nếu trái tim đã đến đáy màn hình
+                    if (heart.y > canvas.height - heart.size) {
+                        heart.isAtBottom = true; // Đánh dấu là đã ở đáy
+                    }
+                } else if (heart.isGoingUp) {
+                    heart.y -= heart.speed; // Bay lên
+                    if (heart.y < -heart.size) {
+                        hearts.splice(index, 1); // Xóa trái tim nếu bay ra khỏi màn hình
+                    }
+                } else {
+                    // Nếu đã ở đáy, tăng thời gian ở lại
+                    heart.stayTime += 1 / 60; // Tăng thời gian ở lại (giả sử 60 FPS)
+                    if (heart.stayTime > 10) { // Nếu đã ở lại 10 giây
+                        hearts.splice(index, 1); // Xóa trái tim
+                    }
+                }
+                // Vẽ trái tim
+                drawHeart(heart.x, heart.y, heart.size, heart.rotation);
+            });
+
+            requestAnimationFrame(update); // Gọi lại hàm update
+        }
+
+        // Tạo trái tim mỗi nửa giây
+        setInterval(createHeart, 100);
+
+        // Bắt đầu cập nhật
+        update();
+
+        // Hàm hiển thị câu chuyện với hiệu ứng gõ chữ
+        function typeWriter(text, speed = 50) {
+            return new Promise(resolve => {
+                let i = 0;
+                questionText.innerHTML = '';
+                function type() {
+                    if (i < text.length) {
+                        questionText.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+        // Hiển thị câu chuyện
+        async function showStory() {
+            await typeWriter(story[currentStoryIndex]);
+            if (currentStoryIndex < story.length - 1) {
+                nextButton.style.display = 'inline-block'; // Hiển thị nút Next
+            } else {
+                nextButton.style.display = 'none'; // Ẩn nút Next ở câu cuối
+                yesButton.style.display = 'inline-block'; // Hiển thị nút Yes
+                noButton.style.display = 'inline-block'; // Hiển thị nút No
+            }
+        }
+
+        // Xử lý sự kiện khi nhấn nút "Next"
+        nextButton.addEventListener('click', async function () {
+            currentStoryIndex++;
+            nextButton.style.display = 'none'; // Ẩn nút Next ngay khi nhấn
+            await showStory();
+        });
+
+        // Bắt đầu hiển thị câu chuyện
+        showStory();
+
+        // Xử lý sự kiện khi nhấn nút "No"
+        document.getElementById('noButton').addEventListener('click', function () {
+            const questionContainer = document.getElementById('questionContainer');
+            questionContainer.style.position = 'absolute';
+            questionContainer.style.top = `${Math.random() * 90}%`;
+            questionContainer.style.left = `${Math.random() * 90}%`;
+            questionContainer.style.pointerEvents = 'none'; // Tắt khả năng tương tác
+        });
+
+        // Xử lý sự kiện khi chuột chạm vào nút "No"
+        document.getElementById('noButton').addEventListener('mouseenter', function () {
+            const button = document.getElementById('noButton');
+            let newTop, newLeft;
+            do {
+                newTop = Math.random() * 90;
+                newLeft = Math.random() * 90;
+            } while (isOverlapping(newTop, newLeft)); // Kiểm tra trùng lặp với nút "Yes"
+            button.style.position = 'absolute';
+            button.style.top = `${newTop}%`;
+            button.style.left = `${newLeft}%`;
+        });
+
+        // Hàm kiểm tra xem hai nút có trùng lặp không
+        function isOverlapping(newTop, newLeft) {
+            const yesButton = document.getElementById('yesButton');
+            const yesRect = yesButton.getBoundingClientRect();
+            const noRect = {
+                top: newTop * window.innerHeight / 100,
+                left: newLeft * window.innerWidth / 100,
+                width: yesRect.width,
+                height: yesRect.height
+            };
+
+            return !(
+                noRect.left > yesRect.right ||
+                noRect.left + noRect.width < yesRect.left ||
+                noRect.top > yesRect.bottom ||
+                noRect.top + noRect.height < yesRect.top
+            );
+        }
+
+        // Hàm kiểm tra khoảng cách giữa con trỏ chuột và nút "No"
+        function checkMouseProximity(event) {
+            const button = document.getElementById('noButton');
+            const buttonRect = button.getBoundingClientRect();
+
+            // Tính toán vị trí trung tâm của nút "No"
+            const buttonCenterX = buttonRect.left + buttonRect.width / 2;
+            const buttonCenterY = buttonRect.top + buttonRect.height / 2;
+
+            // Tính khoảng cách giữa con trỏ chuột và trung tâm nút "No"
+            const distance = Math.sqrt(
+                Math.pow(event.clientX - buttonCenterX, 2) +
+                Math.pow(event.clientY - buttonCenterY, 2)
+            );
+
+            // Nếu khoảng cách nhỏ hơn 20px, di chuyển nút "No"
+            if (distance < 60) {
+                let newTop, newLeft;
+                do {
+                    newTop = Math.random() * 90; // Vị trí ngẫu nhiên theo chiều dọc
+                    newLeft = Math.random() * 90; // Vị trí ngẫu nhiên theo chiều ngang
+                } while (isOverlapping(newTop, newLeft)); // Kiểm tra trùng lặp với nút "Yes"
+
+                button.style.position = 'absolute';
+                button.style.top = `${newTop}%`;
+                button.style.left = `${newLeft}%`;
+            }
+        }
+
+        // Thêm sự kiện mousemove để kiểm tra khoảng cách
+        document.addEventListener('mousemove', checkMouseProximity);
+
+        // Xử lý sự kiện khi nhấn nút "Yes"
+        yesButton.addEventListener('click', function () {
+            noButton.style.display = 'none';
+            yesButton.style.display = 'none';
+            questionText.textContent = "Cảm ơn em! Đây là khởi đầu đẹp nhất của chúng ta 💞"; // Thay đổi nội dung
+            hearts.forEach(heart => {
+                heart.isGoingUp = true; // Đánh dấu trái tim để bay lên
+            });
+        });
+    </script>
+</body>
+
+</html>
