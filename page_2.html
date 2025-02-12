@@ -110,7 +110,7 @@
     <audio id="myAudio" autoplay loop>
         <source src="./love.mp3" type="audio/mpeg">
     </audio>
-    <button id="playButton" style="display: none">Phát âm thanh</button>
+
     <canvas id="canvas"></canvas>
 
     <div id="questionContainer">
@@ -132,11 +132,10 @@
         const story = [
             "Chào em,... ",
             "Có vài lời anh muốn gửi tới em...",
-            "Đó là ...",
             "Sau những lần trò chuyện, anh đã thấy mình hợp nhau lạ kỳ... 💬",
             "Những đêm thức khuya tâm sự, cùng những câu chuyện không điểm dừng... 🌙",
-            "Nụ cười em là thứ khiến anh hạnh phúc nhất mỗi ngày 😊",
-            "Em có muốn cùng anh viết tiếp câu chuyện này không? 💌"
+            "Em xuất hiện và nụ cười em là thứ khiến anh hạnh phúc nhất mỗi ngày 😊",
+            "Em có muốn cùng anh viết tiếp câu chuyện này vào 14/02 này không? 💌"
         ];
 
         let currentStoryIndex = 0;
@@ -164,12 +163,6 @@
             ctx.closePath();
             ctx.restore();
         }
-        const audio = document.getElementById('myAudio');
-        const playButton = document.getElementById('playButton');
-
-        playButton.addEventListener('click', () => {
-            audio.play();
-        });
 
         // Mảng để lưu trữ các trái tim
         const hearts = [];
@@ -342,7 +335,7 @@
         yesButton.addEventListener('click', function () {
             noButton.style.display = 'none';
             yesButton.style.display = 'none';
-            newtext = "Cảm ơn em! Đây là khởi đầu đẹp nhất của chúng ta 💞"; // Thay đổi nội dung
+            newtext = "Cảm ơn em! Mong rằng đây sẽ là khởi đầu đẹp nhất mà anh có thể danh cho em 💞"; // Thay đổi nội dung
 
             // Bắt đầu hiệu ứng gõ chữ cho đoạn văn mới
             requestAnimationFrame((timestamp) => typeWriter(newtext));
