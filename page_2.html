@@ -107,9 +107,10 @@
 </head>
 
 <body>
-    <audio autoplay loop>
+    <audio id="myAudio" loop>
         <source src="./love.mp3" type="audio/mpeg">
     </audio>
+    <button id="playButton" style="display: none">Phát âm thanh</button>
     <canvas id="canvas"></canvas>
 
     <div id="questionContainer">
@@ -163,6 +164,12 @@
             ctx.closePath();
             ctx.restore();
         }
+        const audio = document.getElementById('myAudio');
+        const playButton = document.getElementById('playButton');
+
+        playButton.addEventListener('click', () => {
+            audio.play();
+        });
 
         // Mảng để lưu trữ các trái tim
         const hearts = [];
